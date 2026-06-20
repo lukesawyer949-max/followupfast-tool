@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FollowUpFast — Free Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #0f0f0f;
+    font-family: Georgia, serif;
+    color: #f0ebe1;
+  }
+  header {
+    border-bottom: 1px solid #2a2a2a;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #141414;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: #e87b3a;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .brand-name { font-size: 22px; font-weight: bold; letter-spacing: -0.5px; color: #f5f0e8; }
+  .brand-tag { font-size: 12px; color: #888; letter-spacing: 0.5px; font-family: monospace; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
+  h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: bold;
+    line-height: 1.15;
+    margin: 0 0 12px;
+    color: #f5f0e8;
+  }
+  h1 span { color: #e87b3a; }
+  .sub { color: #888; font-size: 16px; margin: 0 0 40px; font-family: monospace; }
+  .card {
+    background: #1a1a1a;
+    border: 1px solid #2e2e2e;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  label {
+    display: block;
+    font-size: 11px;
+    font-family: monospace;
+    letter-spacing: 1px;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  input {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1px solid #2e2e2e;
+    background: #111;
+    color: #f0ebe1;
+    font-size: 14px;
+    font-family: Georgia, serif;
+    outline: none;
+  }
+  input:focus { border-color: #e87b3a; }
+  .field { margin-bottom: 20px; }
+  .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .scenario-btn {
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 2px solid #2e2e2e;
+    background: #111;
+    color: #888;
+    cursor: pointer;
+    text-align: left;
+    font-size: 14px;
+    font-family: monospace;
+    transition: all 0.15s;
+  }
+  .scenario-btn.active { border-color: #e87b3a; background: rgba(232,123,58,0.1); color: #e8d5c0; }
+  .tone-row { display: flex; gap: 10px; margin-bottom: 28px; }
+  .tone-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 2px solid #2e2e2e;
+    background: transparent;
+    color: #888;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: monospace;
+    transition: all 0.15s;
+  }
+  .tone-btn.active { background: #e87b3a; color: #0f0f0f; border-color: #e87b3a; font-weight: bold; }
+  .gen-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #e87b3a;
+    color: #0f0f0f;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: monospace;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .gen-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+  .error-box {
+    background: rgba(220,60,60,0.1);
+    border: 1px solid rgba(220,60,60,0.3);
+    border-radius: 10px;
+    padding: 14px 20px;
+    color: #e88;
+    font-size: 14px;
+    margin-bottom: 24px;
+    font-family: monospace;
+  }
+  .msg-card {
+    background: #1a1a1a;
+    border: 1px solid #2e2e2e;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .msg-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid #2e2e2e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #141414;
+  }
+  .msg-label-wrap { display: flex; align-items: center; gap: 10px; }
+  .msg-label { font-size: 12px; font-weight: bold; font-family: monospace; letter-spacing: 1px; color: #e8a87c; }
+  .msg-tag { font-size: 11px; color: #555; font-family: monospace; }
+  .copy-btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1px solid #3e3e3e;
+    background: #222;
+    color: #aaa;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: monospace;
+    font-weight: bold;
+  }
+  .copy-btn.copied { background: #e87b3a; color: #0f0f0f; }
+  .msg-body { padding: 20px; color: #ccc; font-size: 14px; line-height: 1.7; }
+  .msg-subject { color: #e8a87c; font-size: 13px; margin-bottom: 10px; font-family: monospace; }
+  .reset-btn {
+    background: transparent;
+    border: 1px solid #2e2e2e;
+    color: #666;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: monospace;
+    width: 100%;
+  }
+  .badge {
+    font-size: 13px; color: #666; font-family: monospace; letter-spacing: 1px; margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">⚡</div>
+  <div>
+    <div class="brand-name">FollowUpFast</div>
+    <div class="brand-tag">AI FOLLOW-UP FOR HOME SERVICE PROS — FREE TO TRY</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>Never lose a lead<br/><span>to silence again.</span></h1>
+  <p class="sub">Fill in the details → get 3 ready-to-send messages in seconds. No login, no credit card.</p>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="biz">Your Business Name</label>
+        <input id="biz" placeholder="e.g. Mike's HVAC Pro" />
+      </div>
+      <div>
+        <label for="cust">Customer Name</label>
+        <input id="cust" placeholder="e.g. John Smith" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="job">Job Type</label>
+      <input id="job" placeholder="e.g. AC tune-up, drain cleaning, house cleaning..." list="jobs" />
+      <datalist id="jobs">
+        <option value="AC tune-up"><option value="Plumbing repair"><option value="House cleaning">
+        <option value="HVAC installation"><option value="Water heater repair"><option value="Drain cleaning">
+        <option value="Furnace service"><option value="Electrical inspection"><option value="Carpet cleaning">
+        <option value="Gutter cleaning">
+      </datalist>
+    </div>
+
+    <div class="field">
+      <label>Scenario</label>
+      <div class="scenario-grid" id="scenario-grid">
+        <button class="scenario-btn" data-id="no_response_quote" data-label="No response after quote">📋 No response after quote</button>
+        <button class="scenario-btn" data-id="after_completed_job" data-label="After completed job">✅ After completed job</button>
+        <button class="scenario-btn" data-id="missed_call" data-label="Missed call follow-up">📞 Missed call follow-up</button>
+        <button class="scenario-btn" data-id="overdue_maintenance" data-label="Overdue maintenance reminder">🔧 Overdue maintenance reminder</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Message Tone</label>
+      <div class="tone-row" id="tone-row">
+        <button class="tone-btn active" data-tone="friendly">Friendly</button>
+        <button class="tone-btn" data-tone="professional">Professional</button>
+        <button class="tone-btn" data-tone="urgent">Urgent</button>
+      </div>
+    </div>
+
+    <button class="gen-btn" id="gen-btn" disabled>⚡ Generate Follow-Up Messages</button>
+  </div>
+
+  <div id="error-zone"></div>
+  <div id="results"></div>
+</div>
+
+<script>
+  let scenario = null;
+  let scenarioLabel = "";
+  let tone = "friendly";
+
+  const bizEl = document.getElementById("biz");
+  const custEl = document.getElementById("cust");
+  const jobEl = document.getElementById("job");
+  const genBtn = document.getElementById("gen-btn");
+
+  function checkReady() {
+    genBtn.disabled = !(bizEl.value.trim() && custEl.value.trim() && jobEl.value.trim() && scenario);
+  }
+  [bizEl, custEl, jobEl].forEach(el => el.addEventListener("input", checkReady));
+
+  document.querySelectorAll(".scenario-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".scenario-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      scenario = btn.dataset.id;
+      scenarioLabel = btn.dataset.label;
+      checkReady();
+    });
+  });
+
+  document.querySelectorAll(".tone-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tone-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      tone = btn.dataset.tone;
+    });
+  });
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  async function generate() {
+    const errorZone = document.getElementById("error-zone");
+    const results = document.getElementById("results");
+    errorZone.innerHTML = "";
+    results.innerHTML = "";
+    genBtn.disabled = true;
+    genBtn.textContent = "⚡ Generating your messages...";
+
+    try {
+      const resp = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: bizEl.value.trim(),
+          customerName: custEl.value.trim(),
+          jobType: jobEl.value.trim(),
+          scenarioLabel,
+          tone,
+        }),
+      });
+
+      if (!resp.ok) throw new Error("Request failed");
+      const data = await resp.json();
+      renderResults(data);
+    } catch (err) {
+      errorZone.innerHTML = '<div class="error-box">Something went wrong generating messages. Please try again.</div>';
+    } finally {
+      genBtn.textContent = "⚡ Generate Follow-Up Messages";
+      checkReady();
+    }
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text);
+    const original = btn.textContent;
+    btn.textContent = "✓ Copied!";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 2000);
+  }
+
+  function renderResults(messages) {
+    const results = document.getElementById("results");
+    const emailFull = `Subject: ${messages.email.subject}\n\n${messages.email.body}`;
+
+    results.innerHTML = `
+      <div class="badge">✓ 3 MESSAGES READY — COPY & SEND</div>
+
+      <div class="msg-card">
+        <div class="msg-head">
+          <div class="msg-label-wrap">
+            <span>📧</span>
+            <div><div class="msg-label">EMAIL</div><div class="msg-tag">Paste into Gmail, Outlook, or your CRM</div></div>
+          </div>
+          <button class="copy-btn" data-copy-id="email">Copy</button>
+        </div>
+        <div class="msg-body">
+          <div class="msg-subject">Subject: ${escapeHtml(messages.email.subject)}</div>
+          <div style="white-space:pre-wrap;">${escapeHtml(messages.email.body)}</div>
+        </div>
+      </div>
+
+      <div class="msg-card">
+        <div class="msg-head">
+          <div class="msg-label-wrap">
+            <span>💬</span>
+            <div><div class="msg-label">SMS</div><div class="msg-tag">Under 160 characters — send from your phone</div></div>
+          </div>
+          <button class="copy-btn" data-copy-id="sms">Copy</button>
+        </div>
+        <div class="msg-body">${escapeHtml(messages.sms.body)}</div>
+      </div>
+
+      <div class="msg-card">
+        <div class="msg-head">
+          <div class="msg-label-wrap">
+            <span>🎙️</span>
+            <div><div class="msg-label">VOICEMAIL SCRIPT</div><div class="msg-tag">Read this aloud — ~15 seconds</div></div>
+          </div>
+          <button class="copy-btn" data-copy-id="voicemail">Copy</button>
+        </div>
+        <div class="msg-body" style="font-style:italic; color:#d4c9b8;">"${escapeHtml(messages.voicemail.script)}"</div>
+      </div>
+
+      <button class="reset-btn" id="reset-btn">↺ Generate new messages</button>
+    `;
+
+    results.querySelector('[data-copy-id="email"]').addEventListener("click", (e) => copyText(emailFull, e.target));
+    results.querySelector('[data-copy-id="sms"]').addEventListener("click", (e) => copyText(messages.sms.body, e.target));
+    results.querySelector('[data-copy-id="voicemail"]').addEventListener("click", (e) => copyText(messages.voicemail.script, e.target));
+    results.querySelector("#reset-btn").addEventListener("click", () => { results.innerHTML = ""; });
+  }
+
+  genBtn.addEventListener("click", generate);
+</script>
+
+</body>
+</html>
