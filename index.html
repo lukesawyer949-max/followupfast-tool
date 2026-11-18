@@ -244,6 +244,24 @@
   .upgrade-btn { display: inline-block; padding: 14px 28px; border-radius: 12px; background: #e87b3a; color: #0f0f0f; font-family: monospace; font-weight: bold; font-size: 15px; text-decoration: none; }
   .upgrade-note { font-size: 11px; font-family: monospace; color: #888; margin-top: 12px; line-height: 1.5; }
 
+  .due-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: rgba(232,123,58,0.12); border: 1px solid #e87b3a; border-radius: 12px; padding: 12px 16px; margin-bottom: 24px; font-family: monospace; font-size: 13px; color: #e8d5c0; }
+  .add-row { margin-bottom: 14px; }
+  .add-form { background: #1a1a1a; border: 1px solid #2e2e2e; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .add-form[hidden] { display: none; }
+  .add-form .row, .edit-panel .row { margin-bottom: 12px; }
+  .add-error, .edit-error { font-size: 12px; font-family: monospace; color: #e88; }
+  input[type="date"] { color-scheme: dark; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tab { padding: 7px 14px; border-radius: 18px; border: 1px solid #2e2e2e; background: transparent; color: #888; font-size: 12px; font-family: monospace; cursor: pointer; }
+  .tab.active { background: #e87b3a; border-color: #e87b3a; color: #0f0f0f; font-weight: bold; }
+  .pill.due-overdue { background: rgba(220,60,60,0.15); color: #e88; }
+  .pill.due-today { background: rgba(232,123,58,0.18); color: #e8a87c; }
+  .pill.due-later { background: #2a2a2a; color: #aaa; }
+  .lead-contact { font-size: 12px; font-family: monospace; color: #999; margin-top: 6px; overflow-wrap: anywhere; }
+  .lead-contact a { color: #e8a87c; }
+  .lead-notes { font-size: 13px; color: #bbb; margin-top: 6px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .edit-panel { margin-top: 12px; }
+
   @media (max-width: 600px) {
     .install-bar { padding: 12px 16px; }
     header { padding: 18px 16px; }
@@ -275,11 +293,13 @@
   <h1>Never lose a lead<br/><span>to silence again.</span></h1>
   <p class="sub">Fill in the details → get 3 ready-to-send messages in seconds. Free to try: just your email, no credit card.</p>
 
+  <div id="due-banner"></div>
+
   <div class="card">
     <div class="field">
       <label for="email">Your email</label>
       <input id="email" type="email" maxlength="254" autocomplete="email" inputmode="email" placeholder="you@yourbusiness.com" />
-      <p class="field-note">Required to start your free trial. We use it to track your free generations and to follow up about FollowUpFast.</p>
+      <p class="field-note">Required to start your free trial. We use it to track your free generations and to follow up about FollowUpFast. <a href="/privacy.html" style="color:#e87b3a;">Privacy policy</a></p>
     </div>
 
     <div class="row">
@@ -337,14 +357,40 @@
   <div id="error-zone"></div>
   <div id="results"></div>
 
-  <section class="board" aria-labelledby="board-title">
-    <h2 id="board-title">Money won back</h2>
-    <p class="board-note">Save a lead after you generate its messages, then mark it won when the customer books. Totals are the jobs you mark as won. Everything stays in this browser only; it never goes to our server. If you install the app, leads saved in your browser may not carry over, so download a CSV first.</p>
+  <section class="board" id="board" aria-labelledby="board-title">
+    <h2 id="board-title">Lead tracker</h2>
+    <p class="board-note">Keep every quote in one place: add leads, set a follow-up date, and see who needs a nudge today. Totals count the jobs you mark as won. Leads, notes and phone numbers stay in this browser only; they never go to our server. If you install the app, it may keep its own separate list, so download a CSV first.</p>
     <div class="tiles" id="tiles"></div>
+
+    <div class="add-row"><button class="mini-btn go" id="add-toggle" type="button">+ Add a lead</button></div>
+    <div class="add-form" id="add-form" hidden>
+      <div class="row">
+        <div><label for="a-cust">Customer name</label><input id="a-cust" maxlength="60" placeholder="e.g. John Smith" /></div>
+        <div><label for="a-job">Job</label><input id="a-job" maxlength="80" placeholder="e.g. AC tune-up" /></div>
+      </div>
+      <div class="row">
+        <div><label for="a-amount">Quote amount (optional)</label><input id="a-amount" maxlength="10" inputmode="decimal" placeholder="e.g. 450" /></div>
+        <div><label for="a-due">Follow up on</label><input id="a-due" type="date" /></div>
+      </div>
+      <div class="row">
+        <div><label for="a-phone">Phone (optional)</label><input id="a-phone" maxlength="30" inputmode="tel" placeholder="e.g. 336-555-0142" /></div>
+        <div><label for="a-email">Email (optional)</label><input id="a-email" type="email" maxlength="254" placeholder="customer@email.com" /></div>
+      </div>
+      <div class="field"><label for="a-notes">Notes (optional)</label><input id="a-notes" maxlength="500" placeholder="e.g. wants a second quote, prefers texts" /></div>
+      <div class="lead-actions">
+        <button class="mini-btn go" id="a-save" type="button">Save lead</button>
+        <button class="mini-btn" id="a-cancel" type="button">Cancel</button>
+        <span class="add-error" id="a-error" role="alert"></span>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
     <div id="lead-list"></div>
     <div class="board-foot" id="board-foot"></div>
     <div class="storage-warn" id="storage-warn" hidden>Couldn't save to this browser (private mode or blocked storage). Download your leads before closing this tab.</div>
   </section>
+
+  <p class="field-note" style="text-align:center; margin-top:40px;"><a href="/privacy.html" style="color:#e87b3a;">Privacy policy</a></p>
 </div>
 
 <script>
@@ -397,7 +443,7 @@
     return div.innerHTML;
   }
 
-  /* ---------- money-won tracker (browser-only storage) ---------- */
+  /* ---------- lead tracker (browser-only storage) ---------- */
 
   const STORE_KEY = "ff_leads_v1";
   const MAX_LEADS = 500;
@@ -412,10 +458,62 @@
     return Math.min(Math.round(n * 100) / 100, MAX_AMOUNT);
   }
 
+  function str(v, max) {
+    return typeof v === "string" ? v.replace(/[\u0000-\u001f]/g, " ").trim().slice(0, max) : "";
+  }
+
+  /* Dates are stored as local "YYYY-MM-DD" strings so time zones never shift a due date. */
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function dayKey(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+  function todayKey() { return dayKey(new Date()); }
+  function addDays(key, n) {
+    const p = key.split("-").map(Number);
+    return dayKey(new Date(p[0], p[1] - 1, p[2] + n));
+  }
+  function daysUntil(key) {
+    const t = todayKey().split("-").map(Number);
+    const k = key.split("-").map(Number);
+    return Math.round((Date.UTC(k[0], k[1] - 1, k[2]) - Date.UTC(t[0], t[1] - 1, t[2])) / 86400000);
+  }
+  function validDay(s) {
+    if (typeof s !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    const p = s.split("-").map(Number);
+    const d = new Date(p[0], p[1] - 1, p[2]);
+    return d.getFullYear() === p[0] && d.getMonth() === p[1] - 1 && d.getDate() === p[2];
+  }
+  function fmtDay(key) {
+    const p = key.split("-").map(Number);
+    return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+  function fmtDate(ts) {
+    return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
   function validLead(l) {
     return l && typeof l === "object" && typeof l.id === "string" &&
       typeof l.customer === "string" && ["open", "won", "lost"].includes(l.status) &&
       typeof l.amount === "number";
+  }
+
+  /* Fills in the newer fields on leads saved by older versions of the page. */
+  function normalizeLead(l) {
+    return {
+      id: l.id,
+      customer: str(l.customer, 60) || "Customer",
+      job: str(l.job, 80),
+      scenario: str(l.scenario, 60),
+      amount: l.amount,
+      status: l.status,
+      createdAt: typeof l.createdAt === "number" ? l.createdAt : Date.now(),
+      wonAt: typeof l.wonAt === "number" ? l.wonAt : null,
+      wonAmount: typeof l.wonAmount === "number" ? l.wonAmount : null,
+      phone: str(l.phone, 30),
+      email: str(l.email, 254),
+      notes: str(l.notes, 500),
+      dueAt: validDay(l.dueAt) ? l.dueAt : null,
+      followUps: Number.isInteger(l.followUps) && l.followUps >= 0 ? l.followUps : 0,
+      lastContactAt: typeof l.lastContactAt === "number" ? l.lastContactAt : null,
+    };
   }
 
   function loadLeads() {
@@ -423,15 +521,39 @@
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return [];
       const arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr.filter(validLead) : [];
+      return Array.isArray(arr) ? arr.filter(validLead).map(normalizeLead) : [];
     } catch (_) {
       return [];
     }
   }
 
+  function makeLead(o) {
+    return {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      customer: o.customer,
+      job: o.job || "",
+      scenario: o.scenario || "",
+      amount: o.amount || 0,
+      status: "open",
+      createdAt: Date.now(),
+      wonAt: null,
+      wonAmount: null,
+      phone: o.phone || "",
+      email: o.email || "",
+      notes: o.notes || "",
+      dueAt: o.dueAt || null,
+      followUps: 0,
+      lastContactAt: null,
+    };
+  }
+
   let leads = loadLeads();
+  let view = null;
   let winningId = null;
   let armedRemoveId = null;
+  let editingId = null;
+  let followingId = null;
+  let followUpLeadId = null;
 
   function persist() {
     let ok = true;
@@ -451,8 +573,17 @@
     return node;
   }
 
-  function fmtDate(ts) {
-    return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  function dueInfo(l) {
+    if (l.status !== "open" || !l.dueAt) return null;
+    const n = daysUntil(l.dueAt);
+    if (n < 0) return { n: n, cls: "overdue", label: "Overdue " + (-n) + (n === -1 ? " day" : " days") };
+    if (n === 0) return { n: n, cls: "today", label: "Due today" };
+    if (n === 1) return { n: n, cls: "later", label: "Due tomorrow" };
+    return { n: n, cls: "later", label: "Due " + fmtDay(l.dueAt) };
+  }
+  function needsFollowUp(l) {
+    const d = dueInfo(l);
+    return !!d && d.n <= 0;
   }
 
   function computeTotals() {
@@ -481,41 +612,125 @@
 
   function jobsWord(n) { return n + (n === 1 ? " job" : " jobs"); }
 
+  const TABS = [["due", "Needs follow-up"], ["open", "Open"], ["won", "Won"], ["lost", "Lost"], ["all", "All"]];
+
+  function inView(l, v) {
+    if (v === "all") return true;
+    if (v === "due") return needsFollowUp(l);
+    return l.status === v;
+  }
+
+  function sortedView(v) {
+    const list = leads.filter(l => inView(l, v));
+    const byDue = (a, b) => {
+      if (a.dueAt && b.dueAt) return a.dueAt < b.dueAt ? -1 : a.dueAt > b.dueAt ? 1 : b.createdAt - a.createdAt;
+      if (a.dueAt) return -1;
+      if (b.dueAt) return 1;
+      return b.createdAt - a.createdAt;
+    };
+    if (v === "due" || v === "open") return list.sort(byDue);
+    if (v === "won") return list.sort((a, b) => (b.wonAt || 0) - (a.wonAt || 0));
+    return list.sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  function renderBanner() {
+    const n = leads.filter(needsFollowUp).length;
+    const zone = document.getElementById("due-banner");
+    if (!n) { zone.replaceChildren(); return; }
+    zone.replaceChildren(el("div", { cls: "due-banner" }, [
+      el("span", { text: "🔔 " + n + (n === 1 ? " lead needs" : " leads need") + " a follow-up today" }),
+      el("button", { cls: "mini-btn go", text: "See who", attrs: { type: "button" }, on: { click: () => {
+        view = "due"; renderBoard();
+        document.getElementById("board").scrollIntoView({ behavior: "smooth" });
+      } } }),
+    ]));
+  }
+
+  function renderTabs() {
+    const wrap = document.getElementById("tabs");
+    wrap.replaceChildren(...TABS.map(t => {
+      const count = leads.filter(l => inView(l, t[0])).length;
+      return el("button", {
+        cls: "tab" + (view === t[0] ? " active" : ""),
+        text: t[1] + " (" + count + ")",
+        attrs: { type: "button", "aria-pressed": view === t[0] ? "true" : "false" },
+        on: { click: () => { view = t[0]; winningId = null; followingId = null; editingId = null; armedRemoveId = null; renderBoard(); } },
+      });
+    }));
+  }
+
+  const EMPTY_TEXT = {
+    due: "Nobody needs a follow-up today. Nice work.",
+    open: "No open leads right now.",
+    won: "No won jobs yet. Mark a lead as won when the customer books.",
+    lost: "No lost leads.",
+    all: "No leads yet.",
+  };
+
   function renderBoard() {
+    if (view === null) view = leads.some(needsFollowUp) ? "due" : "open";
+
     const t = computeTotals();
-    const tiles = document.getElementById("tiles");
-    tiles.replaceChildren(
+    document.getElementById("tiles").replaceChildren(
       tile("Won back this month", money.format(t.month), jobsWord(t.monthCount), true),
       tile("Won back all time", money.format(t.all), jobsWord(t.allCount), false),
       tile("Still open", money.format(t.openValue), t.openCount + (t.openCount === 1 ? " quote" : " quotes") + " waiting", false)
     );
 
+    renderBanner();
+    renderTabs();
+
     const list = document.getElementById("lead-list");
     if (!leads.length) {
-      list.replaceChildren(el("div", { cls: "empty", text: "No leads saved yet. Generate messages above, then tap “Save to my leads” to start tracking what you win back." }));
+      list.replaceChildren(el("div", { cls: "empty", text: "No leads saved yet. Add a lead above, or generate messages and tap “Save to my leads”." }));
     } else {
-      const ordered = leads.slice().sort((a, b) => b.createdAt - a.createdAt);
-      list.replaceChildren(...ordered.map(leadRow));
+      const items = sortedView(view);
+      list.replaceChildren(...(items.length ? items.map(leadRow) : [el("div", { cls: "empty", text: EMPTY_TEXT[view] })]));
     }
 
     const foot = document.getElementById("board-foot");
     foot.replaceChildren();
     if (leads.length) {
-      foot.appendChild(el("button", { cls: "mini-btn", text: "Download leads (CSV)", on: { click: downloadCsv } }));
+      foot.appendChild(el("button", { cls: "mini-btn", text: "Download leads (CSV)", attrs: { type: "button" }, on: { click: downloadCsv } }));
       foot.appendChild(el("span", { cls: "board-note", text: leads.length + (leads.length === 1 ? " lead" : " leads") + " saved in this browser" }));
     }
   }
 
+  function btn(text, cls, onClick) {
+    return el("button", { cls: "mini-btn" + (cls ? " " + cls : ""), text: text, attrs: { type: "button" }, on: { click: onClick } });
+  }
+
   function leadRow(l) {
     const amountText = l.status === "won" ? money.format(l.wonAmount || 0) : (l.amount > 0 ? money.format(l.amount) : "No quote");
-    const nameWrap = el("div", null, [
-      el("div", { cls: "lead-name" }, [
-        el("span", { text: l.customer }),
-        el("span", { cls: "pill " + l.status, text: l.status }),
-      ]),
-      el("div", { cls: "lead-meta", text: [l.job, l.scenario, "saved " + fmtDate(l.createdAt)].filter(Boolean).join(" · ") }),
-    ]);
-    const top = el("div", { cls: "lead-top" }, [nameWrap, el("div", { cls: "lead-amt", text: amountText })]);
+    const di = dueInfo(l);
+    const nameLine = [el("span", { text: l.customer }), el("span", { cls: "pill " + l.status, text: l.status })];
+    if (di) nameLine.push(el("span", { cls: "pill due-" + di.cls, text: di.label }));
+
+    const info = [
+      el("div", { cls: "lead-name" }, nameLine),
+      el("div", { cls: "lead-meta", text: [l.job, l.scenario, "saved " + fmtDate(l.createdAt), l.followUps ? "followed up " + l.followUps + "×" : ""].filter(Boolean).join(" · ") }),
+    ];
+    if (l.status === "open" && !l.dueAt) {
+      info.push(el("div", { cls: "lead-meta", text: "No follow-up date set" }));
+    }
+    if (l.phone || l.email) {
+      const contact = el("div", { cls: "lead-contact" });
+      if (l.phone) {
+        const digits = l.phone.replace(/[^\d+]/g, "");
+        contact.appendChild(digits.replace(/\D/g, "").length >= 7
+          ? el("a", { text: l.phone, attrs: { href: "tel:" + digits } })
+          : el("span", { text: l.phone }));
+      }
+      if (l.phone && l.email) contact.appendChild(el("span", { text: " · " }));
+      if (l.email) contact.appendChild(el("span", { text: l.email }));
+      info.push(contact);
+    }
+    if (l.notes) info.push(el("div", { cls: "lead-notes", text: l.notes }));
+
+    const top = el("div", { cls: "lead-top" }, [el("div", null, info), el("div", { cls: "lead-amt", text: amountText })]);
+
+    if (editingId === l.id) return el("div", { cls: "lead" }, [top, editPanel(l)]);
+
     const actions = el("div", { cls: "lead-actions" });
 
     if (winningId === l.id) {
@@ -527,44 +742,128 @@
       actions.append(
         el("label", { cls: "win-label", text: "Final amount", attrs: { for: "win-" + l.id } }),
         input,
-        el("button", { cls: "mini-btn go", text: "Confirm win", on: { click: confirm } }),
-        el("button", { cls: "mini-btn", text: "Cancel", on: { click: () => { winningId = null; renderBoard(); } } })
+        btn("Confirm win", "go", confirm),
+        btn("Cancel", "", () => { winningId = null; renderBoard(); })
       );
-    } else if (l.status === "open") {
+    } else if (followingId === l.id) {
       actions.append(
-        el("button", { cls: "mini-btn go", text: "Mark won", on: { click: () => { winningId = l.id; armedRemoveId = null; renderBoard(); const i = document.getElementById("win-" + l.id); if (i) i.focus(); } } }),
-        el("button", { cls: "mini-btn", text: "Mark lost", on: { click: () => setStatus(l.id, "lost") } })
+        el("span", { cls: "win-label", text: "Check this lead again in:" }),
+        btn("2 days", "go", () => logFollowUp(l.id, 2)),
+        btn("3 days", "go", () => logFollowUp(l.id, 3)),
+        btn("1 week", "go", () => logFollowUp(l.id, 7)),
+        btn("No reminder", "", () => logFollowUp(l.id, 0)),
+        btn("Cancel", "", () => { followingId = null; renderBoard(); })
       );
     } else {
-      actions.append(el("button", { cls: "mini-btn", text: "Reopen", on: { click: () => setStatus(l.id, "open") } }));
+      if (l.status === "open") {
+        actions.append(
+          btn("Write follow-up", "go", () => useForFollowUp(l)),
+          btn("Followed up", "", () => { followingId = l.id; winningId = null; armedRemoveId = null; renderBoard(); }),
+          btn("Mark won", "", () => { winningId = l.id; armedRemoveId = null; renderBoard(); const i = document.getElementById("win-" + l.id); if (i) i.focus(); }),
+          btn("Mark lost", "", () => setStatus(l.id, "lost"))
+        );
+      } else {
+        actions.append(btn("Reopen", "", () => setStatus(l.id, "open")));
+      }
+      actions.append(btn("Edit", "", () => { editingId = l.id; winningId = null; followingId = null; armedRemoveId = null; renderBoard(); }));
+      const armed = armedRemoveId === l.id;
+      actions.append(btn(armed ? "Tap again to remove" : "Remove", armed ? "warn" : "", () => {
+        if (armed) removeLead(l.id); else { armedRemoveId = l.id; renderBoard(); }
+      }));
     }
-
-    const armed = armedRemoveId === l.id;
-    actions.append(el("button", {
-      cls: "mini-btn" + (armed ? " warn" : ""),
-      text: armed ? "Tap again to remove" : "Remove",
-      on: { click: () => { if (armed) removeLead(l.id); else { armedRemoveId = l.id; renderBoard(); } } },
-    }));
 
     return el("div", { cls: "lead" }, [top, actions]);
   }
 
+  function editPanel(l) {
+    const fields = {};
+    function field(key, label, value, attrs) {
+      const input = el("input", { attrs: Object.assign({ id: "e-" + key + "-" + l.id }, attrs) });
+      input.value = value;
+      fields[key] = input;
+      return el("div", null, [el("label", { text: label, attrs: { for: input.id } }), input]);
+    }
+    const error = el("span", { cls: "edit-error", attrs: { role: "alert" } });
+
+    const save = () => {
+      const customer = str(fields.customer.value, 60);
+      if (!customer) { error.textContent = "Enter the customer's name."; return; }
+      const amt = parseAmount(fields.amount.value);
+      if (amt === null) { error.textContent = "Quote amount must be a number."; return; }
+      const due = fields.due.value;
+      if (due && !validDay(due)) { error.textContent = "Pick a valid follow-up date."; return; }
+      l.customer = customer;
+      l.job = str(fields.job.value, 80);
+      l.amount = amt;
+      l.dueAt = due || null;
+      l.phone = str(fields.phone.value, 30);
+      l.email = str(fields.email.value, 254);
+      l.notes = str(fields.notes.value, 500);
+      editingId = null;
+      persist();
+      renderBoard();
+    };
+
+    return el("div", { cls: "edit-panel" }, [
+      el("div", { cls: "row" }, [
+        field("customer", "Customer name", l.customer, { maxlength: "60" }),
+        field("job", "Job", l.job, { maxlength: "80" }),
+      ]),
+      el("div", { cls: "row" }, [
+        field("amount", "Quote amount", l.amount > 0 ? String(l.amount) : "", { maxlength: "10", inputmode: "decimal" }),
+        field("due", "Follow up on", l.dueAt || "", { type: "date" }),
+      ]),
+      el("div", { cls: "row" }, [
+        field("phone", "Phone", l.phone, { maxlength: "30", inputmode: "tel" }),
+        field("email", "Email", l.email, { maxlength: "254", type: "email" }),
+      ]),
+      el("div", { cls: "field" }, [field("notes", "Notes", l.notes, { maxlength: "500" })]),
+      el("div", { cls: "lead-actions" }, [
+        btn("Save changes", "go", save),
+        btn("Cancel", "", () => { editingId = null; renderBoard(); }),
+        error,
+      ]),
+    ]);
+  }
+
   function saveLead(snapshot) {
     if (leads.length >= MAX_LEADS) return false;
-    leads.push({
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    leads.push(makeLead({
       customer: snapshot.customer,
       job: snapshot.job,
       scenario: snapshot.scenario,
       amount: snapshot.amount,
-      status: "open",
-      createdAt: Date.now(),
-      wonAt: null,
-      wonAmount: null,
-    });
+      dueAt: addDays(todayKey(), 2),
+    }));
+    if (view !== "due" && view !== "all") view = "open";
     persist();
     renderBoard();
     return true;
+  }
+
+  function logFollowUp(id, days) {
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    l.followUps += 1;
+    l.lastContactAt = Date.now();
+    l.dueAt = days ? addDays(todayKey(), days) : null;
+    followingId = null;
+    persist();
+    renderBoard();
+  }
+
+  /* Sends a saved lead's details up to the message form so the owner can write the follow-up. */
+  function useForFollowUp(l) {
+    custEl.value = l.customer;
+    jobEl.value = l.job || "";
+    amountEl.value = l.amount > 0 ? String(l.amount) : "";
+    const scenarioBtn = document.querySelector('.scenario-btn[data-id="no_response_quote"]');
+    if (scenarioBtn) scenarioBtn.click();
+    followUpLeadId = l.id;
+    checkReady();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    const missing = [emailEl, bizEl].find(e => !e.value.trim());
+    (missing || genBtn).focus({ preventScroll: true });
   }
 
   function markWon(id, rawAmount) {
@@ -597,6 +896,61 @@
     renderBoard();
   }
 
+  /* ---- add a lead by hand ---- */
+
+  const addToggle = document.getElementById("add-toggle");
+  const addForm = document.getElementById("add-form");
+  const aCust = document.getElementById("a-cust");
+  const aJob = document.getElementById("a-job");
+  const aAmount = document.getElementById("a-amount");
+  const aDue = document.getElementById("a-due");
+  const aPhone = document.getElementById("a-phone");
+  const aEmail = document.getElementById("a-email");
+  const aNotes = document.getElementById("a-notes");
+  const aError = document.getElementById("a-error");
+
+  function openAdd() {
+    addForm.hidden = false;
+    aDue.value = addDays(todayKey(), 2);
+    addToggle.textContent = "Close";
+    aCust.focus();
+  }
+  function closeAdd() {
+    addForm.hidden = true;
+    addToggle.textContent = "+ Add a lead";
+    aError.textContent = "";
+  }
+  addToggle.addEventListener("click", () => { if (addForm.hidden) openAdd(); else closeAdd(); });
+  document.getElementById("a-cancel").addEventListener("click", closeAdd);
+  document.getElementById("a-save").addEventListener("click", () => {
+    const customer = str(aCust.value, 60);
+    if (!customer) { aError.textContent = "Enter the customer's name."; return; }
+    const amt = parseAmount(aAmount.value);
+    if (amt === null) { aError.textContent = "Quote amount must be a number."; return; }
+    const due = aDue.value;
+    if (due && !validDay(due)) { aError.textContent = "Pick a valid follow-up date."; return; }
+    if (leads.length >= MAX_LEADS) { aError.textContent = "Lead list is full (500). Remove some first."; return; }
+    leads.push(makeLead({
+      customer: customer,
+      job: str(aJob.value, 80),
+      amount: amt,
+      dueAt: due || null,
+      phone: str(aPhone.value, 30),
+      email: str(aEmail.value, 254),
+      notes: str(aNotes.value, 500),
+    }));
+    [aCust, aJob, aAmount, aPhone, aEmail, aNotes].forEach(i => { i.value = ""; });
+    closeAdd();
+    view = due && daysUntil(due) <= 0 ? "due" : "open";
+    persist();
+    renderBoard();
+  });
+
+  /* Refresh the due labels when the owner comes back to the page, unless they are mid-edit. */
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && editingId === null && winningId === null && followingId === null && addForm.hidden) renderBoard();
+  });
+
   function csvCell(v) {
     let s = String(v == null ? "" : v);
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
@@ -604,11 +958,12 @@
   }
 
   function downloadCsv() {
-    const head = ["Date saved", "Customer", "Job", "Scenario", "Quote", "Status", "Won amount", "Won date"];
+    const head = ["Date saved", "Customer", "Job", "Scenario", "Quote", "Status", "Won amount", "Won date", "Phone", "Email", "Notes", "Follow-up date", "Follow-ups done"];
     const rows = leads.slice().sort((a, b) => a.createdAt - b.createdAt).map(l => [
       new Date(l.createdAt).toISOString().slice(0, 10), l.customer, l.job, l.scenario,
       l.amount || "", l.status, l.wonAmount == null ? "" : l.wonAmount,
       l.wonAt ? new Date(l.wonAt).toISOString().slice(0, 10) : "",
+      l.phone, l.email, l.notes, l.dueAt || "", l.followUps,
     ]);
     const csv = [head, ...rows].map(r => r.map(csvCell).join(",")).join("\r\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
@@ -621,8 +976,18 @@
 
   /* ---------- free trial (email + limited generations) ---------- */
 
-  // Update this if your Stripe payment link changes (for example, a new LLC account).
-  const PAYMENT_URL = "https://buy.stripe.com/8x24gAeindh88uQgV0fAc00";
+  // Pricing switch: set FOUNDING_OPEN to false when the founding slots are full.
+  // The upgrade card then uses the $99/month link instead of the $39/month one.
+  const FOUNDING_OPEN = true;
+  const FOUNDING_URL = "https://buy.stripe.com/8x24gAeindh88uQgV0fAc00";
+  const STANDARD_URL = "https://buy.stripe.com/aFa8wQ1vBfpgh1m8oufAc01";
+  const PAYMENT_URL = FOUNDING_OPEN ? FOUNDING_URL : STANDARD_URL;
+  const PRICE_LABEL = FOUNDING_OPEN ? "$39/month" : "$99/month";
+  // Set to true only if the $99 Stripe link really includes a free trial.
+  const STANDARD_HAS_TRIAL = false;
+  const CHECKOUT_NOTE = (FOUNDING_OPEN || STANDARD_HAS_TRIAL)
+    ? "Includes a 7-day free trial (card required to start). Cancel anytime. Checkout uses the email above so we can unlock it for you."
+    : "Billed monthly. Cancel anytime. Checkout uses the email above so we can unlock it for you.";
   const trialStatus = document.getElementById("trial-status");
   const upgradeZone = document.getElementById("upgrade-zone");
 
@@ -642,8 +1007,8 @@
     upgradeZone.replaceChildren(el("div", { cls: "upgrade-card" }, [
       el("div", { cls: "upgrade-title", text: heading }),
       el("p", { cls: "upgrade-body", text: body }),
-      el("a", { cls: "upgrade-btn", text: "Keep going: $39/month", attrs: { href: href, rel: "noopener" } }),
-      el("p", { cls: "upgrade-note", text: "Includes a 7-day free trial (card required to start). Cancel anytime. Checkout uses the email above so we can unlock it for you." }),
+      el("a", { cls: "upgrade-btn", text: "Keep going: " + PRICE_LABEL, attrs: { href: href, rel: "noopener" } }),
+      el("p", { cls: "upgrade-note", text: CHECKOUT_NOTE }),
     ]));
   }
 
@@ -665,6 +1030,8 @@
       scenario: scenarioLabel,
       amount: parseAmount(amountEl.value) || 0,
     };
+    const linked = followUpLeadId ? leads.find(x => x.id === followUpLeadId) : null;
+    snapshot.leadId = linked && linked.customer === snapshot.customer ? linked.id : null;
 
     try {
       const resp = await fetch("/api/generate", {
@@ -770,14 +1137,24 @@
     results.querySelector("#reset-btn").addEventListener("click", () => { results.innerHTML = ""; });
 
     const saveBtn = results.querySelector("#save-lead-btn");
-    saveBtn.addEventListener("click", () => {
-      if (saveLead(snapshot)) {
-        saveBtn.textContent = "✓ Saved to your leads";
+    if (snapshot.leadId) {
+      saveBtn.textContent = "✓ I sent it: log follow-up";
+      saveBtn.addEventListener("click", () => {
+        logFollowUp(snapshot.leadId, 3);
+        followUpLeadId = null;
+        saveBtn.textContent = "✓ Logged. This lead comes back up in 3 days";
         saveBtn.disabled = true;
-      } else {
-        saveBtn.textContent = "Lead list is full (500). Remove some below.";
-      }
-    });
+      });
+    } else {
+      saveBtn.addEventListener("click", () => {
+        if (saveLead(snapshot)) {
+          saveBtn.textContent = "✓ Saved. Follow-up reminder set for 2 days from now";
+          saveBtn.disabled = true;
+        } else {
+          saveBtn.textContent = "Lead list is full (500). Remove some below.";
+        }
+      });
+    }
   }
 
   /* ---------- install to home screen ---------- */
