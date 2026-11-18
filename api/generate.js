@@ -97,7 +97,11 @@ const enc = encodeURIComponent;
 
 async function getUser(cfg, email) {
   const r = await sb(cfg, "GET", `email=eq.${enc(email)}&select=email,uses,paid`);
-  if (!r.ok) throw new Error(`lookup failed (${r.status})`);
+  if (!r.ok) {
+    let host = "invalid-url";
+    try { host = new URL(cfg.url).host; } catch (_) {}
+    throw new Error(`lookup failed (${r.status}) host=${host} body=${JSON.stringify(r.json)}`);
+  }
   return Array.isArray(r.json) && r.json.length ? r.json[0] : null;
 }
 
