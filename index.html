@@ -236,6 +236,14 @@
   }
   .install-close { background: transparent; border: none; color: #777; font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; }
 
+  .field-note { font-size: 11px; font-family: monospace; color: #666; line-height: 1.5; margin-top: 8px; }
+  .trial-status { font-size: 12px; font-family: monospace; color: #8a8a8a; margin-top: 12px; text-align: center; min-height: 16px; }
+  .upgrade-card { background: rgba(232,123,58,0.08); border: 1px solid #e87b3a; border-radius: 14px; padding: 24px; margin-bottom: 24px; text-align: center; }
+  .upgrade-title { font-size: 20px; font-weight: bold; color: #f5f0e8; margin-bottom: 8px; }
+  .upgrade-body { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 16px; font-family: monospace; }
+  .upgrade-btn { display: inline-block; padding: 14px 28px; border-radius: 12px; background: #e87b3a; color: #0f0f0f; font-family: monospace; font-weight: bold; font-size: 15px; text-decoration: none; }
+  .upgrade-note { font-size: 11px; font-family: monospace; color: #888; margin-top: 12px; line-height: 1.5; }
+
   @media (max-width: 600px) {
     .install-bar { padding: 12px 16px; }
     header { padding: 18px 16px; }
@@ -265,9 +273,15 @@
 
 <div class="wrap">
   <h1>Never lose a lead<br/><span>to silence again.</span></h1>
-  <p class="sub">Fill in the details → get 3 ready-to-send messages in seconds. No login, no credit card.</p>
+  <p class="sub">Fill in the details → get 3 ready-to-send messages in seconds. Free to try: just your email, no credit card.</p>
 
   <div class="card">
+    <div class="field">
+      <label for="email">Your email</label>
+      <input id="email" type="email" maxlength="254" autocomplete="email" inputmode="email" placeholder="you@yourbusiness.com" />
+      <p class="field-note">Required to start your free trial. We use it to track your free generations and to follow up about FollowUpFast.</p>
+    </div>
+
     <div class="row">
       <div>
         <label for="biz">Your Business Name</label>
@@ -316,8 +330,10 @@
     </div>
 
     <button class="gen-btn" id="gen-btn" disabled>⚡ Generate Follow-Up Messages</button>
+    <div class="trial-status" id="trial-status" aria-live="polite"></div>
   </div>
 
+  <div id="upgrade-zone"></div>
   <div id="error-zone"></div>
   <div id="results"></div>
 
@@ -341,11 +357,21 @@
   const jobEl = document.getElementById("job");
   const amountEl = document.getElementById("amount");
   const genBtn = document.getElementById("gen-btn");
+  const emailEl = document.getElementById("email");
+  const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  try {
+    const savedEmail = localStorage.getItem("ff_email");
+    if (savedEmail) emailEl.value = savedEmail;
+  } catch (_) {}
+  emailEl.addEventListener("input", () => {
+    try { localStorage.setItem("ff_email", emailEl.value.trim()); } catch (_) {}
+  });
 
   function checkReady() {
-    genBtn.disabled = !(bizEl.value.trim() && custEl.value.trim() && jobEl.value.trim() && scenario);
+    genBtn.disabled = !(EMAIL_OK.test(emailEl.value.trim()) && bizEl.value.trim() && custEl.value.trim() && jobEl.value.trim() && scenario);
   }
-  [bizEl, custEl, jobEl].forEach(el => el.addEventListener("input", checkReady));
+  [emailEl, bizEl, custEl, jobEl].forEach(el => el.addEventListener("input", checkReady));
 
   document.querySelectorAll(".scenario-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -593,6 +619,34 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  /* ---------- free trial (email + limited generations) ---------- */
+
+  // Update this if your Stripe payment link changes (for example, a new LLC account).
+  const PAYMENT_URL = "https://buy.stripe.com/8x24gAeindh88uQgV0fAc00";
+  const trialStatus = document.getElementById("trial-status");
+  const upgradeZone = document.getElementById("upgrade-zone");
+
+  function setTrialStatus(trial) {
+    trialStatus.textContent = "";
+    if (!trial) return;
+    if (trial.paid) { trialStatus.textContent = "Unlimited plan active for this email."; return; }
+    if (typeof trial.remaining === "number" && typeof trial.limit === "number") {
+      trialStatus.textContent = trial.remaining > 0
+        ? trial.remaining + " of " + trial.limit + " free generations left"
+        : "You've used all " + trial.limit + " free generations";
+    }
+  }
+
+  function renderUpgrade(heading, body) {
+    const href = PAYMENT_URL + "?locked_prefilled_email=" + encodeURIComponent(emailEl.value.trim());
+    upgradeZone.replaceChildren(el("div", { cls: "upgrade-card" }, [
+      el("div", { cls: "upgrade-title", text: heading }),
+      el("p", { cls: "upgrade-body", text: body }),
+      el("a", { cls: "upgrade-btn", text: "Keep going: $39/month", attrs: { href: href, rel: "noopener" } }),
+      el("p", { cls: "upgrade-note", text: "Includes a 7-day free trial (card required to start). Cancel anytime. Checkout uses the email above so we can unlock it for you." }),
+    ]));
+  }
+
   /* ---------- message generation ---------- */
 
   async function generate() {
@@ -600,6 +654,7 @@
     const results = document.getElementById("results");
     errorZone.innerHTML = "";
     results.innerHTML = "";
+    upgradeZone.replaceChildren();
     let userMsg = "Something went wrong generating messages. Please try again.";
     genBtn.disabled = true;
     genBtn.textContent = "⚡ Generating your messages...";
@@ -616,6 +671,7 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          email: emailEl.value.trim(),
           businessName: bizEl.value.trim(),
           customerName: snapshot.customer,
           jobType: snapshot.job,
@@ -625,16 +681,28 @@
       });
 
       if (!resp.ok) {
-        if (resp.status === 429) {
-          try { userMsg = (await resp.json()).error || userMsg; } catch (_) {}
+        let payload = null;
+        try { payload = await resp.json(); } catch (_) {}
+        if (payload && payload.code === "trial_over") {
+          setTrialStatus({ remaining: 0, limit: payload.limit });
+          renderUpgrade("Your free trial is used up", "You've used all " + payload.limit + " free generations. Subscribe to keep writing follow-ups for every quote.");
+          userMsg = null;
+        } else if (payload && payload.error && [400, 403, 429].includes(resp.status)) {
+          userMsg = payload.error;
         }
         throw new Error("Request failed");
       }
       const data = await resp.json();
       renderResults(data, snapshot);
+      setTrialStatus(data.trial);
+      if (data.trial && !data.trial.paid && data.trial.remaining === 0) {
+        renderUpgrade("That was your last free generation", "Subscribe to keep writing follow-ups for every quote.");
+      }
     } catch (err) {
-      if (!navigator.onLine) userMsg = "You're offline. Reconnect to generate messages. Your saved leads below still work.";
-      errorZone.innerHTML = '<div class="error-box">' + escapeHtml(userMsg) + '</div>';
+      if (userMsg !== null) {
+        if (!navigator.onLine) userMsg = "You're offline. Reconnect to generate messages. Your saved leads below still work.";
+        errorZone.innerHTML = '<div class="error-box">' + escapeHtml(userMsg) + '</div>';
+      }
     } finally {
       genBtn.textContent = "⚡ Generate Follow-Up Messages";
       checkReady();
