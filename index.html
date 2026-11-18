@@ -1040,11 +1040,11 @@
   // The upgrade card then uses the $99/month link instead of the $39/month one.
   const FOUNDING_OPEN = true;
   const FOUNDING_URL = "https://buy.stripe.com/7sY28sb6bdh8cL6eMSfAc02";
-  const STANDARD_URL = "https://buy.stripe.com/aFa8wQ1vBfpgh1m8oufAc01";
+  const STANDARD_URL = "https://buy.stripe.com/6oU7sMcaf0um26sfQWfAc04";
   const PAYMENT_URL = FOUNDING_OPEN ? FOUNDING_URL : STANDARD_URL;
   const PRICE_LABEL = FOUNDING_OPEN ? "$39/month" : "$99/month";
   // Set to true only if the $99 Stripe link really includes a free trial.
-  const STANDARD_HAS_TRIAL = false;
+  const STANDARD_HAS_TRIAL = true;
   const CHECKOUT_NOTE = FOUNDING_OPEN
     ? "Founding price for the first 5 shops, then $99/month for new customers. Includes a 7-day free trial (card required to start). Cancel anytime. Checkout uses the email above so we can unlock it for you."
     : STANDARD_HAS_TRIAL
