@@ -4,6 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>FollowUpFast — Free Tool</title>
+<meta name="theme-color" content="#141414" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="icon" type="image/png" href="/icon-192.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="FollowUpFast" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -47,6 +55,7 @@
     margin-bottom: 32px;
   }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .row-job { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
   label {
     display: block;
     font-size: 11px;
@@ -166,6 +175,76 @@
   .badge {
     font-size: 13px; color: #666; font-family: monospace; letter-spacing: 1px; margin-bottom: 16px;
   }
+
+  .save-lead-btn {
+    width: 100%;
+    padding: 13px;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    border: 1px dashed #e87b3a;
+    background: rgba(232,123,58,0.08);
+    color: #e8d5c0;
+    font-size: 14px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .save-lead-btn:disabled { border-style: solid; border-color: #2e2e2e; background: #141414; color: #7fbf7f; cursor: default; }
+
+  .board { margin-top: 48px; border-top: 1px solid #2a2a2a; padding-top: 32px; }
+  .board h2 { font-size: 22px; margin-bottom: 6px; color: #f5f0e8; }
+  .board-note { font-size: 12px; font-family: monospace; color: #666; line-height: 1.6; margin-bottom: 20px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .tile { background: #1a1a1a; border: 1px solid #2e2e2e; border-radius: 12px; padding: 16px; }
+  .tile.hero { border-color: #e87b3a; background: rgba(232,123,58,0.08); }
+  .tile-label { font-size: 10px; font-family: monospace; letter-spacing: 1px; color: #777; text-transform: uppercase; margin-bottom: 8px; }
+  .tile-value { font-size: 26px; font-weight: bold; color: #f5f0e8; }
+  .tile.hero .tile-value { color: #e87b3a; }
+  .tile-sub { font-size: 11px; font-family: monospace; color: #666; margin-top: 4px; }
+  .empty { padding: 24px; border: 1px dashed #2e2e2e; border-radius: 12px; color: #777; font-size: 13px; font-family: monospace; line-height: 1.6; text-align: center; }
+  .lead { background: #1a1a1a; border: 1px solid #2e2e2e; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  .lead-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .lead-name { font-size: 15px; font-weight: bold; color: #f5f0e8; overflow-wrap: anywhere; }
+  .lead-meta { font-size: 11px; font-family: monospace; color: #777; margin-top: 3px; overflow-wrap: anywhere; }
+  .lead-amt { font-size: 16px; font-weight: bold; font-family: monospace; color: #e8d5c0; white-space: nowrap; }
+  .pill { display: inline-block; font-size: 10px; font-family: monospace; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 10px; margin-left: 8px; vertical-align: 2px; }
+  .pill.open { background: #2a2a2a; color: #aaa; }
+  .pill.won { background: rgba(110,190,110,0.15); color: #7fbf7f; }
+  .pill.lost { background: rgba(220,60,60,0.12); color: #d88; }
+  .lead-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  .mini-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid #3e3e3e; background: #222; color: #bbb; font-size: 12px; font-family: monospace; font-weight: bold; cursor: pointer; }
+  .mini-btn.go { background: #e87b3a; border-color: #e87b3a; color: #0f0f0f; }
+  .mini-btn.warn { border-color: #a44; color: #e99; }
+  .win-input { width: 120px; padding: 7px 10px; font-size: 13px; font-family: monospace; }
+  .win-label { font-size: 11px; font-family: monospace; color: #888; margin: 0; letter-spacing: 0; text-transform: none; }
+  .board-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+  .storage-warn { font-size: 12px; font-family: monospace; color: #e8a87c; margin-top: 12px; }
+
+  .install-bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 32px;
+    background: #1a1a1a;
+    border-bottom: 1px solid #2a2a2a;
+    font-family: monospace; font-size: 13px; color: #e8d5c0;
+  }
+  .install-bar[hidden] { display: none; }
+  .install-text { flex: 1; min-width: 200px; line-height: 1.5; }
+  .install-btn {
+    padding: 8px 16px; border-radius: 8px; border: none;
+    background: #e87b3a; color: #0f0f0f;
+    font-family: monospace; font-weight: bold; font-size: 13px; cursor: pointer;
+  }
+  .install-close { background: transparent; border: none; color: #777; font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; }
+
+  @media (max-width: 600px) {
+    .install-bar { padding: 12px 16px; }
+    header { padding: 18px 16px; }
+    .wrap { padding: 28px 16px; }
+    .card { padding: 20px; }
+    .row, .row-job, .scenario-grid { grid-template-columns: 1fr; }
+    .tiles { grid-template-columns: 1fr; }
+    .tone-row { flex-wrap: wrap; }
+  }
 </style>
 </head>
 <body>
@@ -178,6 +257,12 @@
   </div>
 </header>
 
+<div class="install-bar" id="install-bar" hidden>
+  <span class="install-text" id="install-text">Add FollowUpFast to your home screen for one-tap access.</span>
+  <button class="install-btn" id="install-btn" type="button">Install app</button>
+  <button class="install-close" id="install-close" type="button" aria-label="Dismiss">×</button>
+</div>
+
 <div class="wrap">
   <h1>Never lose a lead<br/><span>to silence again.</span></h1>
   <p class="sub">Fill in the details → get 3 ready-to-send messages in seconds. No login, no credit card.</p>
@@ -186,23 +271,29 @@
     <div class="row">
       <div>
         <label for="biz">Your Business Name</label>
-        <input id="biz" placeholder="e.g. Mike's HVAC Pro" />
+        <input id="biz" maxlength="60" placeholder="e.g. Mike's HVAC Pro" />
       </div>
       <div>
         <label for="cust">Customer Name</label>
-        <input id="cust" placeholder="e.g. John Smith" />
+        <input id="cust" maxlength="60" placeholder="e.g. John Smith" />
       </div>
     </div>
 
-    <div class="field">
-      <label for="job">Job Type</label>
-      <input id="job" placeholder="e.g. AC tune-up, drain cleaning, house cleaning..." list="jobs" />
-      <datalist id="jobs">
-        <option value="AC tune-up"><option value="Plumbing repair"><option value="House cleaning">
-        <option value="HVAC installation"><option value="Water heater repair"><option value="Drain cleaning">
-        <option value="Furnace service"><option value="Electrical inspection"><option value="Carpet cleaning">
-        <option value="Gutter cleaning">
-      </datalist>
+    <div class="row-job">
+      <div>
+        <label for="job">Job Type</label>
+        <input id="job" maxlength="80" placeholder="e.g. AC tune-up, drain cleaning..." list="jobs" />
+        <datalist id="jobs">
+          <option value="AC tune-up"><option value="Plumbing repair"><option value="House cleaning">
+          <option value="HVAC installation"><option value="Water heater repair"><option value="Drain cleaning">
+          <option value="Furnace service"><option value="Electrical inspection"><option value="Carpet cleaning">
+          <option value="Gutter cleaning">
+        </datalist>
+      </div>
+      <div>
+        <label for="amount">Quote amount (optional)</label>
+        <input id="amount" maxlength="10" inputmode="decimal" placeholder="e.g. 450" />
+      </div>
     </div>
 
     <div class="field">
@@ -229,6 +320,15 @@
 
   <div id="error-zone"></div>
   <div id="results"></div>
+
+  <section class="board" aria-labelledby="board-title">
+    <h2 id="board-title">Money won back</h2>
+    <p class="board-note">Save a lead after you generate its messages, then mark it won when the customer books. Totals are the jobs you mark as won. Everything stays in this browser only; it never goes to our server. If you install the app, leads saved in your browser may not carry over, so download a CSV first.</p>
+    <div class="tiles" id="tiles"></div>
+    <div id="lead-list"></div>
+    <div class="board-foot" id="board-foot"></div>
+    <div class="storage-warn" id="storage-warn" hidden>Couldn't save to this browser (private mode or blocked storage). Download your leads before closing this tab.</div>
+  </section>
 </div>
 
 <script>
@@ -239,6 +339,7 @@
   const bizEl = document.getElementById("biz");
   const custEl = document.getElementById("cust");
   const jobEl = document.getElementById("job");
+  const amountEl = document.getElementById("amount");
   const genBtn = document.getElementById("gen-btn");
 
   function checkReady() {
@@ -270,13 +371,245 @@
     return div.innerHTML;
   }
 
+  /* ---------- money-won tracker (browser-only storage) ---------- */
+
+  const STORE_KEY = "ff_leads_v1";
+  const MAX_LEADS = 500;
+  const MAX_AMOUNT = 1000000;
+  const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+  function parseAmount(text) {
+    const cleaned = String(text == null ? "" : text).replace(/[$,\s]/g, "");
+    if (!cleaned) return 0;
+    const n = Number(cleaned);
+    if (!isFinite(n) || n < 0) return null;
+    return Math.min(Math.round(n * 100) / 100, MAX_AMOUNT);
+  }
+
+  function validLead(l) {
+    return l && typeof l === "object" && typeof l.id === "string" &&
+      typeof l.customer === "string" && ["open", "won", "lost"].includes(l.status) &&
+      typeof l.amount === "number";
+  }
+
+  function loadLeads() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter(validLead) : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  let leads = loadLeads();
+  let winningId = null;
+  let armedRemoveId = null;
+
+  function persist() {
+    let ok = true;
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(leads)); } catch (_) { ok = false; }
+    document.getElementById("storage-warn").hidden = ok;
+  }
+
+  function el(tag, opts, kids) {
+    const node = document.createElement(tag);
+    if (opts) {
+      if (opts.cls) node.className = opts.cls;
+      if (opts.text != null) node.textContent = opts.text;
+      if (opts.attrs) for (const k in opts.attrs) node.setAttribute(k, opts.attrs[k]);
+      if (opts.on) for (const k in opts.on) node.addEventListener(k, opts.on[k]);
+    }
+    (kids || []).forEach(k => node.appendChild(k));
+    return node;
+  }
+
+  function fmtDate(ts) {
+    return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  function computeTotals() {
+    const now = new Date();
+    const t = { month: 0, monthCount: 0, all: 0, allCount: 0, openCount: 0, openValue: 0 };
+    leads.forEach(l => {
+      if (l.status === "won") {
+        const v = l.wonAmount || 0;
+        t.all += v; t.allCount++;
+        const d = new Date(l.wonAt);
+        if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) { t.month += v; t.monthCount++; }
+      } else if (l.status === "open") {
+        t.openCount++; t.openValue += l.amount || 0;
+      }
+    });
+    return t;
+  }
+
+  function tile(label, value, sub, hero) {
+    return el("div", { cls: "tile" + (hero ? " hero" : "") }, [
+      el("div", { cls: "tile-label", text: label }),
+      el("div", { cls: "tile-value", text: value }),
+      el("div", { cls: "tile-sub", text: sub }),
+    ]);
+  }
+
+  function jobsWord(n) { return n + (n === 1 ? " job" : " jobs"); }
+
+  function renderBoard() {
+    const t = computeTotals();
+    const tiles = document.getElementById("tiles");
+    tiles.replaceChildren(
+      tile("Won back this month", money.format(t.month), jobsWord(t.monthCount), true),
+      tile("Won back all time", money.format(t.all), jobsWord(t.allCount), false),
+      tile("Still open", money.format(t.openValue), t.openCount + (t.openCount === 1 ? " quote" : " quotes") + " waiting", false)
+    );
+
+    const list = document.getElementById("lead-list");
+    if (!leads.length) {
+      list.replaceChildren(el("div", { cls: "empty", text: "No leads saved yet. Generate messages above, then tap “Save to my leads” to start tracking what you win back." }));
+    } else {
+      const ordered = leads.slice().sort((a, b) => b.createdAt - a.createdAt);
+      list.replaceChildren(...ordered.map(leadRow));
+    }
+
+    const foot = document.getElementById("board-foot");
+    foot.replaceChildren();
+    if (leads.length) {
+      foot.appendChild(el("button", { cls: "mini-btn", text: "Download leads (CSV)", on: { click: downloadCsv } }));
+      foot.appendChild(el("span", { cls: "board-note", text: leads.length + (leads.length === 1 ? " lead" : " leads") + " saved in this browser" }));
+    }
+  }
+
+  function leadRow(l) {
+    const amountText = l.status === "won" ? money.format(l.wonAmount || 0) : (l.amount > 0 ? money.format(l.amount) : "No quote");
+    const nameWrap = el("div", null, [
+      el("div", { cls: "lead-name" }, [
+        el("span", { text: l.customer }),
+        el("span", { cls: "pill " + l.status, text: l.status }),
+      ]),
+      el("div", { cls: "lead-meta", text: [l.job, l.scenario, "saved " + fmtDate(l.createdAt)].filter(Boolean).join(" · ") }),
+    ]);
+    const top = el("div", { cls: "lead-top" }, [nameWrap, el("div", { cls: "lead-amt", text: amountText })]);
+    const actions = el("div", { cls: "lead-actions" });
+
+    if (winningId === l.id) {
+      const input = el("input", { cls: "win-input", attrs: { id: "win-" + l.id, inputmode: "decimal", maxlength: "10", "aria-label": "Final job amount in dollars" } });
+      input.value = l.amount > 0 ? String(l.amount) : "";
+      input.placeholder = "Job total $";
+      const confirm = () => markWon(l.id, input.value);
+      input.addEventListener("keydown", (e) => { if (e.key === "Enter") confirm(); });
+      actions.append(
+        el("label", { cls: "win-label", text: "Final amount", attrs: { for: "win-" + l.id } }),
+        input,
+        el("button", { cls: "mini-btn go", text: "Confirm win", on: { click: confirm } }),
+        el("button", { cls: "mini-btn", text: "Cancel", on: { click: () => { winningId = null; renderBoard(); } } })
+      );
+    } else if (l.status === "open") {
+      actions.append(
+        el("button", { cls: "mini-btn go", text: "Mark won", on: { click: () => { winningId = l.id; armedRemoveId = null; renderBoard(); const i = document.getElementById("win-" + l.id); if (i) i.focus(); } } }),
+        el("button", { cls: "mini-btn", text: "Mark lost", on: { click: () => setStatus(l.id, "lost") } })
+      );
+    } else {
+      actions.append(el("button", { cls: "mini-btn", text: "Reopen", on: { click: () => setStatus(l.id, "open") } }));
+    }
+
+    const armed = armedRemoveId === l.id;
+    actions.append(el("button", {
+      cls: "mini-btn" + (armed ? " warn" : ""),
+      text: armed ? "Tap again to remove" : "Remove",
+      on: { click: () => { if (armed) removeLead(l.id); else { armedRemoveId = l.id; renderBoard(); } } },
+    }));
+
+    return el("div", { cls: "lead" }, [top, actions]);
+  }
+
+  function saveLead(snapshot) {
+    if (leads.length >= MAX_LEADS) return false;
+    leads.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      customer: snapshot.customer,
+      job: snapshot.job,
+      scenario: snapshot.scenario,
+      amount: snapshot.amount,
+      status: "open",
+      createdAt: Date.now(),
+      wonAt: null,
+      wonAmount: null,
+    });
+    persist();
+    renderBoard();
+    return true;
+  }
+
+  function markWon(id, rawAmount) {
+    const amt = parseAmount(rawAmount);
+    if (amt === null) return;
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    l.status = "won";
+    l.wonAt = Date.now();
+    l.wonAmount = amt;
+    winningId = null;
+    persist();
+    renderBoard();
+  }
+
+  function setStatus(id, status) {
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    l.status = status;
+    if (status !== "won") { l.wonAt = null; l.wonAmount = null; }
+    armedRemoveId = null;
+    persist();
+    renderBoard();
+  }
+
+  function removeLead(id) {
+    leads = leads.filter(x => x.id !== id);
+    armedRemoveId = null;
+    persist();
+    renderBoard();
+  }
+
+  function csvCell(v) {
+    let s = String(v == null ? "" : v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+
+  function downloadCsv() {
+    const head = ["Date saved", "Customer", "Job", "Scenario", "Quote", "Status", "Won amount", "Won date"];
+    const rows = leads.slice().sort((a, b) => a.createdAt - b.createdAt).map(l => [
+      new Date(l.createdAt).toISOString().slice(0, 10), l.customer, l.job, l.scenario,
+      l.amount || "", l.status, l.wonAmount == null ? "" : l.wonAmount,
+      l.wonAt ? new Date(l.wonAt).toISOString().slice(0, 10) : "",
+    ]);
+    const csv = [head, ...rows].map(r => r.map(csvCell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = el("a", { attrs: { href: url, download: "followupfast-leads.csv" } });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /* ---------- message generation ---------- */
+
   async function generate() {
     const errorZone = document.getElementById("error-zone");
     const results = document.getElementById("results");
     errorZone.innerHTML = "";
     results.innerHTML = "";
+    let userMsg = "Something went wrong generating messages. Please try again.";
     genBtn.disabled = true;
     genBtn.textContent = "⚡ Generating your messages...";
+
+    const snapshot = {
+      customer: custEl.value.trim(),
+      job: jobEl.value.trim(),
+      scenario: scenarioLabel,
+      amount: parseAmount(amountEl.value) || 0,
+    };
 
     try {
       const resp = await fetch("/api/generate", {
@@ -284,18 +617,24 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           businessName: bizEl.value.trim(),
-          customerName: custEl.value.trim(),
-          jobType: jobEl.value.trim(),
+          customerName: snapshot.customer,
+          jobType: snapshot.job,
           scenarioLabel,
           tone,
         }),
       });
 
-      if (!resp.ok) throw new Error("Request failed");
+      if (!resp.ok) {
+        if (resp.status === 429) {
+          try { userMsg = (await resp.json()).error || userMsg; } catch (_) {}
+        }
+        throw new Error("Request failed");
+      }
       const data = await resp.json();
-      renderResults(data);
+      renderResults(data, snapshot);
     } catch (err) {
-      errorZone.innerHTML = '<div class="error-box">Something went wrong generating messages. Please try again.</div>';
+      if (!navigator.onLine) userMsg = "You're offline. Reconnect to generate messages. Your saved leads below still work.";
+      errorZone.innerHTML = '<div class="error-box">' + escapeHtml(userMsg) + '</div>';
     } finally {
       genBtn.textContent = "⚡ Generate Follow-Up Messages";
       checkReady();
@@ -310,7 +649,7 @@
     setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 2000);
   }
 
-  function renderResults(messages) {
+  function renderResults(messages, snapshot) {
     const results = document.getElementById("results");
     const emailFull = `Subject: ${messages.email.subject}\n\n${messages.email.body}`;
 
@@ -353,6 +692,7 @@
         <div class="msg-body" style="font-style:italic; color:#d4c9b8;">"${escapeHtml(messages.voicemail.script)}"</div>
       </div>
 
+      <button class="save-lead-btn" id="save-lead-btn">＋ Save to my leads</button>
       <button class="reset-btn" id="reset-btn">↺ Generate new messages</button>
     `;
 
@@ -360,9 +700,76 @@
     results.querySelector('[data-copy-id="sms"]').addEventListener("click", (e) => copyText(messages.sms.body, e.target));
     results.querySelector('[data-copy-id="voicemail"]').addEventListener("click", (e) => copyText(messages.voicemail.script, e.target));
     results.querySelector("#reset-btn").addEventListener("click", () => { results.innerHTML = ""; });
+
+    const saveBtn = results.querySelector("#save-lead-btn");
+    saveBtn.addEventListener("click", () => {
+      if (saveLead(snapshot)) {
+        saveBtn.textContent = "✓ Saved to your leads";
+        saveBtn.disabled = true;
+      } else {
+        saveBtn.textContent = "Lead list is full (500). Remove some below.";
+      }
+    });
+  }
+
+  /* ---------- install to home screen ---------- */
+
+  const installBar = document.getElementById("install-bar");
+  const installText = document.getElementById("install-text");
+  const installBtn = document.getElementById("install-btn");
+  const installClose = document.getElementById("install-close");
+  let deferredInstall = null;
+
+  function isStandalone() {
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+      window.navigator.standalone === true;
+  }
+  function installDismissed() {
+    try { return localStorage.getItem("ff_install_dismissed") === "1"; } catch (_) { return false; }
+  }
+  function hideInstall(remember) {
+    installBar.hidden = true;
+    if (remember) { try { localStorage.setItem("ff_install_dismissed", "1"); } catch (_) {} }
+  }
+  function showInstall(mode) {
+    if (isStandalone() || installDismissed()) return;
+    if (mode === "ios") {
+      installText.textContent = "Add FollowUpFast to your home screen: tap the Share button, then “Add to Home Screen”.";
+      installBtn.hidden = true;
+    } else {
+      installBtn.hidden = false;
+    }
+    installBar.hidden = false;
+  }
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstall = e;
+    showInstall("prompt");
+  });
+  window.addEventListener("appinstalled", () => { deferredInstall = null; hideInstall(false); });
+  installBtn.addEventListener("click", async () => {
+    if (!deferredInstall) return;
+    const promptEvent = deferredInstall;
+    deferredInstall = null;
+    promptEvent.prompt();
+    try { await promptEvent.userChoice; } catch (_) {}
+    hideInstall(false);
+  });
+  installClose.addEventListener("click", () => hideInstall(true));
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (isIOS) showInstall("ios");
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
   }
 
   genBtn.addEventListener("click", generate);
+  renderBoard();
 </script>
 
 </body>
