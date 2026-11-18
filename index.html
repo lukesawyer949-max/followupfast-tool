@@ -76,7 +76,23 @@
     font-family: Georgia, serif;
     outline: none;
   }
-  input:focus { border-color: #e87b3a; }
+  input:focus, textarea:focus { border-color: #e87b3a; }
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1px solid #2e2e2e;
+    background: #111;
+    color: #f0ebe1;
+    font-size: 13px;
+    font-family: monospace;
+    line-height: 1.5;
+    outline: none;
+    resize: vertical;
+    white-space: pre;
+    overflow: auto;
+  }
   .field { margin-bottom: 20px; }
   .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .scenario-btn {
@@ -245,7 +261,7 @@
   .upgrade-note { font-size: 11px; font-family: monospace; color: #888; margin-top: 12px; line-height: 1.5; }
 
   .due-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: rgba(232,123,58,0.12); border: 1px solid #e87b3a; border-radius: 12px; padding: 12px 16px; margin-bottom: 24px; font-family: monospace; font-size: 13px; color: #e8d5c0; }
-  .add-row { margin-bottom: 14px; }
+  .add-row { margin-bottom: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
   .add-form { background: #1a1a1a; border: 1px solid #2e2e2e; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
   .add-form[hidden] { display: none; }
   .add-form .row, .edit-panel .row { margin-bottom: 12px; }
@@ -342,12 +358,22 @@
       </div>
     </div>
 
+    <div class="field">
+      <label for="details">Details to include (optional)</label>
+      <input id="details" maxlength="160" placeholder="e.g. openings Thursday and Friday, or your visit moved to 4pm Tuesday" />
+    </div>
+
     <details class="more" id="more-details">
       <summary>Make it ready to send (optional)</summary>
       <p class="field-note">Add your name and callback number so messages are signed and ready to send. Add the customer's phone or email to get one-tap Text, Email and Call buttons. The customer's phone and email stay in your browser and are not sent to our server.</p>
       <div class="row">
         <div><label for="owner">Your name</label><input id="owner" maxlength="60" placeholder="e.g. Mike" autocomplete="name" /></div>
         <div><label for="myphone">Your callback number</label><input id="myphone" maxlength="30" inputmode="tel" placeholder="e.g. 555-010-0199" autocomplete="tel" /></div>
+      </div>
+      <div class="field">
+        <label for="reviewlink">Your Google review link (for thank-you messages)</label>
+        <input id="reviewlink" type="url" maxlength="300" placeholder="https://g.page/r/your-business/review" autocomplete="off" />
+        <p class="field-note">In Google Business Profile, open your profile and choose "Ask for reviews" to copy this link. It is added to your thank-you messages automatically.</p>
       </div>
       <div class="row">
         <div><label for="custphone">Customer's phone</label><input id="custphone" maxlength="30" inputmode="tel" placeholder="e.g. 555-010-0142" /></div>
@@ -362,7 +388,11 @@
         <button class="scenario-btn" data-id="after_completed_job" data-label="After completed job">✅ After completed job</button>
         <button class="scenario-btn" data-id="missed_call" data-label="Missed call follow-up">📞 Missed call follow-up</button>
         <button class="scenario-btn" data-id="overdue_maintenance" data-label="Overdue maintenance reminder">🔧 Overdue maintenance reminder</button>
+        <button class="scenario-btn" data-id="thank_you_review" data-label="Thank you + review request">⭐ Thank you + review request</button>
+        <button class="scenario-btn" data-id="availability_nudge" data-label="Availability nudge">🗓️ Availability nudge</button>
+        <button class="scenario-btn" data-id="schedule_update" data-label="Schedule update">🔔 Schedule update</button>
       </div>
+      <p class="field-note" id="review-hint" hidden>Add your Google review link under "Make it ready to send" so it's included in the message automatically.</p>
     </div>
 
     <div class="field">
@@ -387,7 +417,27 @@
     <p class="board-note">Keep every quote in one place: add leads, set a follow-up date, and see who needs a nudge today. Totals count the jobs you mark as won. Leads, notes and phone numbers stay in this browser only; they never go to our server. If you install the app, it may keep its own separate list, so download a CSV first.</p>
     <div class="tiles" id="tiles"></div>
 
-    <div class="add-row"><button class="mini-btn go" id="add-toggle" type="button">+ Add a lead</button></div>
+    <div class="add-row">
+      <button class="mini-btn go" id="add-toggle" type="button">+ Add a lead</button>
+      <button class="mini-btn" id="paste-toggle" type="button">Paste from a spreadsheet</button>
+    </div>
+    <div class="add-form" id="paste-form" hidden>
+      <div class="field">
+        <label for="p-text">Paste rows from Excel, Google Sheets or a CSV</label>
+        <textarea id="p-text" maxlength="100000" spellcheck="false" placeholder="Name	Job	Amount	Phone	Email	Notes	Follow up&#10;John Smith	AC tune-up	450	336-555-0142	john@email.com	wants a second quote	2026-11-25"></textarea>
+        <p class="field-note">Copy the cells in your spreadsheet (include the header row if you have one) and paste here. Recognized columns: name, job, amount, phone, email, notes, follow-up date. No header row? We'll guess from what each cell looks like. Nothing is sent to our server.</p>
+      </div>
+      <div class="row">
+        <div><label for="p-due">Follow up on (for rows with no date)</label><input id="p-due" type="date" /></div>
+        <div></div>
+      </div>
+      <div class="field-note" id="p-preview" aria-live="polite"></div>
+      <div class="lead-actions" style="margin-top:12px;">
+        <button class="mini-btn go" id="p-import" type="button" disabled>Import leads</button>
+        <button class="mini-btn" id="p-cancel" type="button">Cancel</button>
+        <span class="add-error" id="p-error" role="alert"></span>
+      </div>
+    </div>
     <div class="add-form" id="add-form" hidden>
       <div class="row">
         <div><label for="a-cust">Customer name</label><input id="a-cust" maxlength="60" placeholder="e.g. John Smith" /></div>
@@ -435,6 +485,20 @@
   const custPhoneEl = document.getElementById("custphone");
   const custEmailEl = document.getElementById("custemail");
   const moreDetails = document.getElementById("more-details");
+  const detailsEl = document.getElementById("details");
+  const reviewLinkEl = document.getElementById("reviewlink");
+  const reviewHint = document.getElementById("review-hint");
+  const REVIEW_LABEL = "Thank you + review request";
+
+  function validReviewLink(v) {
+    try {
+      const u = new URL(String(v || "").trim());
+      return u.protocol === "https:" && u.hostname.includes(".") && !u.username && !u.password;
+    } catch (_) { return false; }
+  }
+  function updateReviewHint() {
+    reviewHint.hidden = !(scenarioLabel === REVIEW_LABEL && !validReviewLink(reviewLinkEl.value));
+  }
 
   try {
     const savedEmail = localStorage.getItem("ff_email");
@@ -455,6 +519,8 @@
       btn.classList.add("active");
       scenario = btn.dataset.id;
       scenarioLabel = btn.dataset.label;
+      if (scenarioLabel === REVIEW_LABEL && !validReviewLink(reviewLinkEl.value)) moreDetails.open = true;
+      updateReviewHint();
       checkReady();
     });
   });
@@ -473,7 +539,7 @@
   const PROFILE_KEY = "ff_profile_v1";
   function saveProfile() {
     try {
-      localStorage.setItem(PROFILE_KEY, JSON.stringify({ biz: bizEl.value, owner: ownerEl.value, phone: myPhoneEl.value, tone: tone }));
+      localStorage.setItem(PROFILE_KEY, JSON.stringify({ biz: bizEl.value, owner: ownerEl.value, phone: myPhoneEl.value, review: reviewLinkEl.value, tone: tone }));
     } catch (_) {}
   }
   (function loadProfile() {
@@ -483,14 +549,16 @@
       if (typeof p.biz === "string") bizEl.value = p.biz.slice(0, 60);
       if (typeof p.owner === "string") ownerEl.value = p.owner.slice(0, 60);
       if (typeof p.phone === "string") myPhoneEl.value = p.phone.slice(0, 30);
+      if (typeof p.review === "string" && validReviewLink(p.review)) reviewLinkEl.value = p.review.slice(0, 300);
       if (["friendly", "professional", "urgent"].includes(p.tone)) {
         tone = p.tone;
         document.querySelectorAll(".tone-btn").forEach(b => b.classList.toggle("active", b.dataset.tone === tone));
       }
-      if (ownerEl.value || myPhoneEl.value) moreDetails.open = true;
+      if (ownerEl.value || myPhoneEl.value || reviewLinkEl.value) moreDetails.open = true;
     } catch (_) {}
   })();
-  [bizEl, ownerEl, myPhoneEl].forEach(e => e.addEventListener("input", saveProfile));
+  [bizEl, ownerEl, myPhoneEl, reviewLinkEl].forEach(e => e.addEventListener("input", saveProfile));
+  reviewLinkEl.addEventListener("input", updateReviewHint);
 
   function escapeHtml(str) {
     const div = document.createElement("div");
@@ -803,6 +871,12 @@
     } else if (followingId === l.id) {
       actions.append(
         el("span", { cls: "win-label", text: "Check this lead again in:" }),
+        (() => {
+          const gap = smartGap(l.followUps + 1);
+          const b = btn(gap ? "Smart schedule (" + gap + "d)" : "Smart: last try", "go", () => logFollowUp(l.id, gap));
+          b.title = gap ? "Spaces follow-ups out automatically: 3, 4, then 7 days apart." : "That was the 4th follow-up. No more reminders are set.";
+          return b;
+        })(),
         btn("2 days", "go", () => logFollowUp(l.id, 2)),
         btn("3 days", "go", () => logFollowUp(l.id, 3)),
         btn("1 week", "go", () => logFollowUp(l.id, 7)),
@@ -898,6 +972,11 @@
     return true;
   }
 
+  /* Spacing between follow-ups: after the 1st wait 3 days, after the 2nd wait 4, after the 3rd wait 7, then stop. */
+  function smartGap(doneCount) {
+    return doneCount <= 1 ? 3 : doneCount === 2 ? 4 : doneCount === 3 ? 7 : 0;
+  }
+
   function logFollowUp(id, days) {
     const l = leads.find(x => x.id === id);
     if (!l) return;
@@ -916,6 +995,7 @@
     amountEl.value = l.amount > 0 ? String(l.amount) : "";
     custPhoneEl.value = l.phone || "";
     custEmailEl.value = l.email || "";
+    detailsEl.value = "";
     if (l.phone || l.email) moreDetails.open = true;
     const scenarioBtn = document.querySelector('.scenario-btn[data-id="no_response_quote"]');
     if (scenarioBtn) scenarioBtn.click();
@@ -970,6 +1050,7 @@
   const aError = document.getElementById("a-error");
 
   function openAdd() {
+    closePaste();
     addForm.hidden = false;
     aDue.value = addDays(todayKey(), 2);
     addToggle.textContent = "Close";
@@ -1006,9 +1087,256 @@
     renderBoard();
   });
 
+  /* ---- paste leads from a spreadsheet ---- */
+
+  const pasteToggle = document.getElementById("paste-toggle");
+  const pasteForm = document.getElementById("paste-form");
+  const pText = document.getElementById("p-text");
+  const pDue = document.getElementById("p-due");
+  const pPreview = document.getElementById("p-preview");
+  const pImport = document.getElementById("p-import");
+  const pError = document.getElementById("p-error");
+  let pasteRows = [];
+
+  /* Splits pasted text into rows of cells. Handles quoted cells, doubled quotes and line breaks inside quotes. */
+  function parseTable(text, delim) {
+    const rows = [];
+    let row = [], cell = "", inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { cell += '"'; i++; } else inQ = false;
+        } else cell += c;
+      } else if (c === '"' && cell === "") {
+        inQ = true;
+      } else if (c === delim) {
+        row.push(cell); cell = "";
+      } else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell); cell = "";
+        rows.push(row); row = [];
+      } else cell += c;
+    }
+    row.push(cell);
+    rows.push(row);
+    return rows.map(r => r.map(c => c.trim())).filter(r => r.some(c => c !== ""));
+  }
+
+  function pickDelimiter(text) {
+    const first = text.split(/\r?\n/).find(l => l.trim() !== "") || "";
+    if (first.indexOf("\t") !== -1) return "\t";
+    if (first.indexOf(",") !== -1) return ",";
+    if (first.indexOf(";") !== -1) return ";";
+    return "\t";
+  }
+
+  const HEADER_WORDS = {
+    customer: ["name", "customer", "customername", "client", "clientname", "contact", "contactname", "fullname", "lead", "leadname"],
+    first: ["firstname", "first"],
+    last: ["lastname", "last", "surname"],
+    job: ["job", "jobtype", "service", "work", "project", "description", "scope", "item", "jobdescription"],
+    amount: ["amount", "quote", "quoteamount", "quotedprice", "price", "estimate", "total", "value", "cost", "bid"],
+    phone: ["phone", "phonenumber", "mobile", "cell", "cellphone", "tel", "telephone", "mobilephone"],
+    email: ["email", "emailaddress", "mail"],
+    notes: ["notes", "note", "comments", "comment", "details", "memo"],
+    due: ["followup", "followupdate", "followupon", "due", "duedate", "nextfollowup", "nextfollowupdate", "nextcontact", "callback", "callbackdate", "date"],
+  };
+
+  function headerField(cell) {
+    const k = cell.toLowerCase().replace(/[^a-z]/g, "");
+    if (!k) return null;
+    for (const f in HEADER_WORDS) if (HEADER_WORDS[f].indexOf(k) !== -1) return f;
+    return null;
+  }
+
+  const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+  /* Accepts 2026-11-25, 11/25/2026, 11/25/26, 11/25 and "Nov 25". Returns "YYYY-MM-DD" or null. */
+  function parseDay(s) {
+    s = String(s || "").trim();
+    let y, m, d, mt;
+    if ((mt = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s))) { y = +mt[1]; m = +mt[2]; d = +mt[3]; }
+    else if ((mt = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?$/.exec(s))) {
+      m = +mt[1]; d = +mt[2];
+      y = mt[3] ? (mt[3].length === 2 ? 2000 + (+mt[3]) : +mt[3]) : null;
+    } else if ((mt = /^([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:,?\s+(\d{4}))?$/.exec(s))) {
+      m = MONTHS.indexOf(mt[1].slice(0, 3).toLowerCase()) + 1; d = +mt[2]; y = mt[3] ? +mt[3] : null;
+      if (!m) return null;
+    } else return null;
+    if (y === null) {
+      // No year given: use this year, or next year if that date has already passed by more than a month.
+      const now = new Date();
+      y = now.getFullYear();
+      const key = y + "-" + pad2(m) + "-" + pad2(d);
+      if (validDay(key) && daysUntil(key) < -30) y++;
+    }
+    const out = y + "-" + pad2(m) + "-" + pad2(d);
+    return validDay(out) ? out : null;
+  }
+
+  const EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
+  function looksLikePhone(s) {
+    if (!/^[\d\s().+\-x#]+$/i.test(s)) return false;
+    return s.replace(/\D/g, "").length >= 7 && s.replace(/\D/g, "").length <= 15;
+  }
+  function looksLikeAmount(s) { return /^\$?\s*\d[\d,]*(\.\d{1,2})?$/.test(s); }
+
+  /* Turns the rows into lead records. Uses the header row when there is one, otherwise guesses by cell content. */
+  function rowsToLeads(rows) {
+    const out = { leads: [], skipped: 0, ignoredCols: [], usedHeader: false, badDates: 0 };
+    if (!rows.length) return out;
+
+    const hdr = rows[0].map(headerField);
+    const useHeader = hdr.some(f => f !== null) && hdr.some(f => f === "customer" || f === "first");
+    let body = rows;
+    let colField = null;
+    if (useHeader) {
+      out.usedHeader = true;
+      body = rows.slice(1);
+      colField = hdr;
+      rows[0].forEach((c, i) => { if (!hdr[i] && c) out.ignoredCols.push(c); });
+    }
+
+    body.forEach(r => {
+      const rec = { customer: "", job: "", amount: 0, phone: "", email: "", notes: "", dueAt: null };
+      let first = "", last = "";
+      if (colField) {
+        r.forEach((cell, i) => {
+          const f = colField[i];
+          if (!f || !cell) return;
+          if (f === "customer") rec.customer = cell;
+          else if (f === "first") first = cell;
+          else if (f === "last") last = cell;
+          else if (f === "job") rec.job = cell;
+          else if (f === "amount") { const a = parseAmount(cell); if (a) rec.amount = a; }
+          else if (f === "phone") rec.phone = cell;
+          else if (f === "email") { if (EMAIL_RE.test(cell)) rec.email = cell; else rec.notes = (rec.notes ? rec.notes + " · " : "") + cell; }
+          else if (f === "notes") rec.notes = rec.notes ? cell + " · " + rec.notes : cell;
+          else if (f === "due") { const d = parseDay(cell); if (d) rec.dueAt = d; else out.badDates++; }
+        });
+        if (!rec.customer) rec.customer = (first + " " + last).trim();
+      } else {
+        const text = [];
+        r.forEach(cell => {
+          if (!cell) return;
+          const d = parseDay(cell);
+          if (EMAIL_RE.test(cell) && !rec.email) rec.email = cell;
+          else if (d && !rec.dueAt) rec.dueAt = d;
+          else if (looksLikePhone(cell) && !rec.phone && !/^\$/.test(cell)) rec.phone = cell;
+          else if (looksLikeAmount(cell) && !rec.amount) { const a = parseAmount(cell); if (a) rec.amount = a; }
+          else text.push(cell);
+        });
+        rec.customer = text[0] || "";
+        rec.job = text[1] || "";
+        rec.notes = text.slice(2).join(" · ");
+      }
+      rec.customer = str(rec.customer, 60);
+      if (!rec.customer) { out.skipped++; return; }
+      out.leads.push({
+        customer: rec.customer,
+        job: str(rec.job, 80),
+        amount: rec.amount,
+        phone: str(rec.phone, 30),
+        email: str(rec.email, 254),
+        notes: str(rec.notes, 500),
+        dueAt: rec.dueAt,
+      });
+    });
+    return out;
+  }
+
+  function leadKey(l) {
+    return [l.customer.toLowerCase(), (l.phone || "").replace(/\D/g, ""), (l.job || "").toLowerCase()].join("|");
+  }
+
+  function readPasteInput() {
+    const text = pText.value;
+    if (!text.trim()) return { leads: [], skipped: 0, dupes: 0, ignoredCols: [], usedHeader: false, badDates: 0, overLimit: 0 };
+    const res = rowsToLeads(parseTable(text, pickDelimiter(text)));
+    const seen = new Set(leads.map(leadKey));
+    const fresh = [];
+    res.dupes = 0;
+    res.leads.forEach(l => {
+      const k = leadKey(l);
+      if (seen.has(k)) { res.dupes++; return; }
+      seen.add(k);
+      fresh.push(l);
+    });
+    const room = Math.max(0, MAX_LEADS - leads.length);
+    res.overLimit = Math.max(0, fresh.length - room);
+    res.leads = fresh.slice(0, room);
+    return res;
+  }
+
+  function updatePastePreview() {
+    pError.textContent = "";
+    const res = readPasteInput();
+    pasteRows = res.leads;
+    pImport.disabled = !pasteRows.length;
+    if (!pText.value.trim()) { pPreview.textContent = ""; return; }
+    const parts = [];
+    if (pasteRows.length) {
+      const names = pasteRows.slice(0, 3).map(l => l.customer).join(", ");
+      parts.push("Ready to import " + pasteRows.length + (pasteRows.length === 1 ? " lead" : " leads") + " (" + names + (pasteRows.length > 3 ? ", …" : "") + ").");
+    } else {
+      parts.push("No leads found yet. Each row needs at least a customer name.");
+    }
+    if (res.usedHeader) parts.push("Header row detected.");
+    if (res.skipped) parts.push(res.skipped + (res.skipped === 1 ? " row" : " rows") + " skipped (no name).");
+    if (res.dupes) parts.push(res.dupes + " already in your list, skipped.");
+    if (res.overLimit) parts.push(res.overLimit + " not imported (limit is " + MAX_LEADS + " leads).");
+    if (res.badDates) parts.push(res.badDates + (res.badDates === 1 ? " date" : " dates") + " not recognized. Use YYYY-MM-DD or MM/DD/YYYY.");
+    if (res.ignoredCols.length) parts.push("Ignored columns: " + res.ignoredCols.slice(0, 5).join(", ") + ".");
+    pPreview.textContent = parts.join(" ");
+  }
+
+  function openPaste() {
+    closeAdd();
+    pasteForm.hidden = false;
+    pDue.value = addDays(todayKey(), 2);
+    pasteToggle.textContent = "Close paste box";
+    pText.focus();
+    updatePastePreview();
+  }
+  function closePaste() {
+    pasteForm.hidden = true;
+    pasteToggle.textContent = "Paste from a spreadsheet";
+    pError.textContent = "";
+  }
+  pasteToggle.addEventListener("click", () => { if (pasteForm.hidden) openPaste(); else closePaste(); });
+  document.getElementById("p-cancel").addEventListener("click", () => { pText.value = ""; pasteRows = []; pPreview.textContent = ""; pImport.disabled = true; closePaste(); });
+  pText.addEventListener("input", updatePastePreview);
+  pImport.addEventListener("click", () => {
+    updatePastePreview();
+    if (!pasteRows.length) { pError.textContent = "Nothing to import yet."; return; }
+    const fallbackDue = pDue.value && validDay(pDue.value) ? pDue.value : null;
+    let n = 0;
+    pasteRows.forEach(l => {
+      if (leads.length >= MAX_LEADS) return;
+      leads.push(makeLead({
+        customer: l.customer, job: l.job, amount: l.amount,
+        phone: l.phone, email: l.email, notes: l.notes,
+        dueAt: l.dueAt || fallbackDue,
+      }));
+      n++;
+    });
+    pText.value = "";
+    pasteRows = [];
+    pPreview.textContent = "";
+    pImport.disabled = true;
+    closePaste();
+    view = null;
+    persist();
+    renderBoard();
+    document.getElementById("board").scrollIntoView({ behavior: "smooth" });
+    pasteToggle.textContent = "Imported " + n + (n === 1 ? " lead" : " leads") + " ✓";
+    setTimeout(() => { if (pasteForm.hidden) pasteToggle.textContent = "Paste from a spreadsheet"; }, 3000);
+  });
+
   /* Refresh the due labels when the owner comes back to the page, unless they are mid-edit. */
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && editingId === null && winningId === null && followingId === null && addForm.hidden) renderBoard();
+    if (!document.hidden && editingId === null && winningId === null && followingId === null && addForm.hidden && pasteForm.hidden) renderBoard();
   });
 
   function csvCell(v) {
@@ -1108,6 +1436,8 @@
     };
     const linked = followUpLeadId ? leads.find(x => x.id === followUpLeadId) : null;
     snapshot.leadId = linked && linked.customer === snapshot.customer ? linked.id : null;
+    const linkedLead = snapshot.leadId ? linked : null;
+    snapshot.isReview = scenarioLabel === REVIEW_LABEL;
 
     try {
       const resp = await fetch("/api/generate", {
@@ -1124,6 +1454,9 @@
           jobType: snapshot.job,
           scenarioLabel,
           tone,
+          details: detailsEl.value.trim() || undefined,
+          reviewLink: snapshot.isReview && validReviewLink(reviewLinkEl.value) ? reviewLinkEl.value.trim() : undefined,
+          followUpNumber: linkedLead ? linkedLead.followUps + 1 : undefined,
         }),
       });
 
@@ -1235,17 +1568,23 @@
     results.querySelector('[data-copy-id="email"]').addEventListener("click", (e) => copyText(emailFull, e.target));
     results.querySelector('[data-copy-id="sms"]').addEventListener("click", (e) => copyText(messages.sms.body, e.target));
     results.querySelector('[data-copy-id="voicemail"]').addEventListener("click", (e) => copyText(messages.voicemail.script, e.target));
-    results.querySelector("#reset-btn").addEventListener("click", () => { results.innerHTML = ""; });
+    results.querySelector("#reset-btn").addEventListener("click", () => { results.innerHTML = ""; detailsEl.value = ""; });
 
     const saveBtn = results.querySelector("#save-lead-btn");
     if (snapshot.leadId) {
       saveBtn.textContent = "✓ I sent it: log follow-up";
       saveBtn.addEventListener("click", () => {
-        logFollowUp(snapshot.leadId, 3);
+        const doneLead = leads.find(x => x.id === snapshot.leadId);
+        const gap = smartGap((doneLead ? doneLead.followUps : 0) + 1);
+        logFollowUp(snapshot.leadId, gap);
         followUpLeadId = null;
-        saveBtn.textContent = "✓ Logged. This lead comes back up in 3 days";
+        saveBtn.textContent = gap
+          ? "✓ Logged. This lead comes back up in " + gap + " days"
+          : "✓ Logged. That was the 4th try, so no more reminders. Mark it lost or set a new date if you want.";
         saveBtn.disabled = true;
       });
+    } else if (snapshot.isReview) {
+      saveBtn.remove();
     } else {
       saveBtn.addEventListener("click", () => {
         if (saveLead(snapshot)) {
